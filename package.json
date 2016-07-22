@@ -1,0 +1,46 @@
+{
+  "name": "phabricator-to-github",
+  "version": "1.0.0",
+  "private": true,
+  "description": "A tool to migrate phabricator issues to github",
+  "main": "src/migrate.js",
+  "bin": {
+    "phaway": "./bin/phaway.js"
+  },
+  "scripts": {
+    "check": "npm run lint && npm test",
+    "lint": "eslint src/ bin/",
+    "precommit": "npm run check",
+    "preversion": "npm run check",
+    "test": "ava tests/"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/babel/phabricator-to-github.git"
+  },
+  "keywords": [
+    "phabricator"
+  ],
+  "author": "Daniel Tschinder <daniel@tschinder.de>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/babel/phabricator-to-github/issues"
+  },
+  "engines": {
+    "node": ">=6.3.0"
+  },
+  "homepage": "https://github.com/babel/phabricator-to-github#readme",
+  "dependencies": {
+    "commander": "^2.9.0",
+    "github-api": "^2.3.0",
+    "winston": "^2.2.0"
+  },
+  "devDependencies": {
+    "ava": "^0.15.2",
+    "babel-eslint": "^6.1.2",
+    "eslint": "^3.1.1",
+    "eslint-config-airbnb-base": "^4.0.2",
+    "eslint-plugin-import": "^1.11.1",
+    "husky": "^0.11.5"
+  }
+}
