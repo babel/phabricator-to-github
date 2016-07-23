@@ -30,4 +30,4 @@ if (!file) showErrorAndExit('no file given');
 // eslint-disable-next-line no-nested-ternary
 const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info');
 
-importMysqlDump(file, createLoggerFactory(logLevel)('import-mysql-dump'));
+importMysqlDump(file, createLoggerFactory(logLevel));

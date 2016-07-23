@@ -1,28 +1,25 @@
 'use strict';
 const fs = require('fs');
 const path = require('path');
-const exec = require('child_process').exec;
-const formatCliMessages = require('./utils/formatCliMessages');
+const convertToSqlite = require('./import/convertToSqlite');
+const DumpExecutor = require('./sqlite/DumpExecutor');
 
-const targetFile = 'build/sqlitedump.sql';
+const targetFile = path.join(__dirname, '../build/sqlitedump.sql');
+const dbFile = path.join(__dirname, '../build/phabricator.db');
 
-module.exports = function importDump(file, log) {
-  log.info(`Deleting old ${targetFile}`);
-  fs.unlinkSync(targetFile);
+module.exports = function importDump(file, logFactory) {
+  const log = logFactory('import');
+  convertToSqlite(file, targetFile, logFactory('convert'), err => {
+    if (err) {
+      log.error(err);
+      return;
+    }
 
-  log.info('Create directory /build');
-  fs.mkdir(path.join(__dirname, '../build'), () => {
-    log.info('Start converting mysql dump to sqlite');
+    const executor = new DumpExecutor({ debug: true, filename: dbFile }, logFactory('sqlite'));
 
-    const convert = exec(
-      `${path.join(__dirname, '../bin/mysql2sqlite')} ${file} > ${targetFile}`
-    );
-
-    convert.stdout.on('data', formatCliMessages(log.verbose));
-    convert.stderr.on('data', formatCliMessages(log.error));
-
-    convert.on('close', () => {
-      log.info('Finished converting');
-    });
+    fs.createReadStream(targetFile, { encoding: 'utf8' })
+      .on('error', log.error)
+      .on('data', executor.addData)
+      .on('finish', () => log.info('Finished import'));
   });
 };
