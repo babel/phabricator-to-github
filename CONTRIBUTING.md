@@ -12,7 +12,7 @@ git clone git@github.com:babel/phabricator-to-github.git .
 npm i
 ```
 
-The next step is to obtain an mysql dump from phabricator. You can
+The next step is to obtain a mysql dump from phabricator. You can
 download one [here](https://drive.google.com/open?id=0B9zghAL0eXPVV2d4ZVAteU8xZUk).
 
 Once you have a dump you need to convert and import it
