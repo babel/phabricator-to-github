@@ -1,6 +1,15 @@
 'use strict';
 const sqlite3 = require('sqlite3');
 
+const QUERY_START_TOKENS = [
+  'PRAGMA ',
+  'BEGIN TRANSACTION',
+  'END TRANSACTION',
+  'CREATE TABLE ',
+  'CREATE INDEX ',
+  'INSERT INTO ',
+];
+
 module.exports = class DumpExecutor {
 
   constructor(opts, log) {
@@ -8,6 +17,7 @@ module.exports = class DumpExecutor {
     this._queuedLines = [];
     this._queuedQueries = [];
     this._database = null;
+    this._queryCounter = 0;
 
     this.opts = opts;
 
@@ -30,12 +40,20 @@ module.exports = class DumpExecutor {
     this._tryExecute();
   }
 
+  finish() {
+    this._tryExecute();
+  }
+
+  _startsNewQuery(line) {
+    return QUERY_START_TOKENS.some(token => line.startsWith(token));
+  }
+
   _addLine(line) {
-    this._queuedLines.push(line);
-    if (line.endsWith(';')) {
+    if (this._startsNewQuery(line) && this._queuedLines.length > 0) {
       this._queuedQueries.push(this._queuedLines.join(' '));
       this._queuedLines = [];
     }
+    this._queuedLines.push(line);
   }
 
   _getOpenDatabase(callback) {
@@ -60,7 +78,7 @@ module.exports = class DumpExecutor {
 
     this._getOpenDatabase((err, database) => {
       this._queuedQueries.forEach(query => {
-        this._log.debug('Execute query', query);
+        this._log.debug(`#${++this._queryCounter} Execute query`, query);
         database.exec(query);
       });
 
