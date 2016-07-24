@@ -1,7 +1,6 @@
 'use strict';
 const path = require('path');
 const exec = require('child_process').exec;
-const formatCliMessages = require('../utils/formatCliMessages');
 const prepareBuildDirectory = require('./prepareBuildDirectory');
 
 module.exports = function convertToSqlite(file, targetFile, log, callback) {
@@ -17,8 +16,8 @@ module.exports = function convertToSqlite(file, targetFile, log, callback) {
       `${path.join(__dirname, '../../bin/mysql2sqlite')} ${file} > ${targetFile}`
     );
 
-    convert.stdout.on('data', formatCliMessages(log.verbose));
-    convert.stderr.on('data', formatCliMessages(log.error));
+    convert.stdout.on('data', log.verbose);
+    convert.stderr.on('data', log.error);
 
     convert.on('close', () => {
       log.info('Finished converting');
