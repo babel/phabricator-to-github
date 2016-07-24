@@ -48,7 +48,6 @@ inView != 0 { next }
 ( /^ *\(/ && /\) *[,;] *$/ ) || /^(INSERT|insert)/ {
   prev = "";
   gsub( /\\\047/, "\047\047" )  # single quote
-  gsub( /\\\047\047,/, "\\\047," )
   gsub( /\\n/, "\n" )
   gsub( /\\r/, "\r" )
   gsub( /\\"/, "\"" )
