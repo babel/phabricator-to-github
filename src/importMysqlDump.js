@@ -3,6 +3,7 @@ const fs = require('fs');
 const path = require('path');
 const convertToSqlite = require('./import/convertToSqlite');
 const DumpExecutor = require('./sqlite/DumpExecutor');
+const dropDatabase = require('./sqlite/dropDatabase');
 
 const targetFile = path.join(__dirname, '../build/sqlitedump.sql');
 const dbFile = path.join(__dirname, '../build/phabricator.db');
@@ -15,11 +16,15 @@ module.exports = function importDump(file, logFactory) {
       return;
     }
 
-    const executor = new DumpExecutor({ debug: true, filename: dbFile }, logFactory('sqlite'));
+    const sqliteLog = logFactory('sqlite');
 
-    fs.createReadStream(targetFile, { encoding: 'utf8' })
-      .on('error', log.error)
-      .on('data', executor.addData)
-      .on('finish', () => log.info('Finished import'));
+    dropDatabase(dbFile, sqliteLog, () => {
+      const executor = new DumpExecutor({ debug: true, filename: dbFile }, sqliteLog);
+
+      fs.createReadStream(targetFile, { encoding: 'utf8' })
+        .on('error', log.error)
+        .on('data', executor.addData)
+        .on('finish', () => log.info('Finished import'));
+    });
   });
 };
