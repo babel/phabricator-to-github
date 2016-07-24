@@ -3,7 +3,6 @@
   "version": "1.0.0",
   "private": true,
   "description": "A tool to migrate phabricator issues to github",
-  "main": "src/migrate.js",
   "bin": {
     "phaway": "./bin/phaway.js"
   },
@@ -12,7 +11,8 @@
     "lint": "eslint src/ bin/",
     "precommit": "npm run check",
     "preversion": "npm run check",
-    "test": "ava tests/"
+    "test": "ava tests/",
+    "update-mysql2sqlite": "curl -o bin/mysql2sqlite https://raw.githubusercontent.com/dumblob/mysql2sqlite/master/mysql2sqlite && chmod +x bin/mysql2sqlite"
   },
   "repository": {
     "type": "git",
@@ -33,6 +33,7 @@
   "dependencies": {
     "commander": "^2.9.0",
     "github-api": "^2.3.0",
+    "sqlite3": "^3.1.4",
     "winston": "^2.2.0"
   },
   "devDependencies": {

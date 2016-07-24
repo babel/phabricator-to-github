@@ -2,17 +2,10 @@
 'use strict';
 const program = require('commander');
 const pjson = require('../package.json');
-const migrate = require('../src/migrate').migrate;
-const createLoggerFactory = require('../src/utils/createLoggerFactory');
 
 program
-  .description('Migrate Phabricator issues to Github')
   .version(pjson.version)
-  .option('-v, --verbose', 'Change log level to verbose')
-  .option('-d, --debug', 'Change log level to debug')
+  .command('import-mysql-dump <file>', 'Import phabricator mysql dump into sqlite')
+  .command('migrate', 'Migrate Phabricator issues to Github')
   .parse(process.argv);
 
-// eslint-disable-next-line no-nested-ternary
-const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info');
-
-migrate(createLoggerFactory(logLevel));

@@ -1,5 +1,5 @@
 'use strict';
-exports.migrate = function migrate(loggerFactory) {
+module.exports = function migrate(loggerFactory) {
   const log = loggerFactory('general');
   log.info('🌈');
 };
