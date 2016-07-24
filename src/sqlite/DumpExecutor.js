@@ -28,10 +28,7 @@ module.exports = class DumpExecutor {
     // start opening the database
     if (!this._database) this._getOpenDatabase();
 
-    const lines = data.toString()
-      .split(/\r?\n/)
-      .map(line => line.trim())
-      .filter(line => line !== '');
+    const lines = data.toString().split(/\r?\n/);
 
     lines.forEach(line => {
       this._addLine(line);
@@ -41,6 +38,8 @@ module.exports = class DumpExecutor {
   }
 
   finish() {
+    this._pushLinesToQuery();
+    this._queuedLines = [];
     this._tryExecute();
   }
 
@@ -49,11 +48,22 @@ module.exports = class DumpExecutor {
   }
 
   _addLine(line) {
-    if (this._startsNewQuery(line) && this._queuedLines.length > 0) {
-      this._queuedQueries.push(this._queuedLines.join(' '));
-      this._queuedLines = [];
+    const countQueuedLines = this._queuedLines.length;
+
+    if (countQueuedLines > 0) {
+      if (this._startsNewQuery(line)) {
+        this._pushLinesToQuery();
+        this._queuedLines = [line];
+      } else {
+        this._queuedLines[countQueuedLines - 1] += line;
+      }
+    } else {
+      this._queuedLines.push(line);
     }
-    this._queuedLines.push(line);
+  }
+
+  _pushLinesToQuery() {
+    this._queuedQueries.push(this._queuedLines.join('\n'));
   }
 
   _getOpenDatabase(callback) {
@@ -79,7 +89,12 @@ module.exports = class DumpExecutor {
     this._getOpenDatabase((err, database) => {
       this._queuedQueries.forEach(query => {
         this._log.debug(`#${++this._queryCounter} Execute query`, query);
-        database.exec(query);
+        database.exec(query, dbErr => {
+          if (err) {
+            this._log.error('Query failed', { query, dbErr });
+            throw err;
+          }
+        });
       });
 
       this._queuedQueries = [];

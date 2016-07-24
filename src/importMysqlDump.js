@@ -21,10 +21,14 @@ module.exports = function importDump(file, logFactory) {
     dropDatabase(dbFile, sqliteLog, () => {
       const executor = new DumpExecutor({ debug: true, filename: dbFile }, sqliteLog);
 
+      log.info('Start importing data into sqlite');
       fs.createReadStream(targetFile, { encoding: 'utf8' })
         .on('error', log.error)
         .on('data', executor.addData)
-        .on('finish', () => log.info('Finished import'));
+        .on('end', () => {
+          executor.finish();
+          log.info('Finished import');
+        });
     });
   });
 };

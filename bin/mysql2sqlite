@@ -47,7 +47,11 @@ inView != 0 { next }
 # Print all `INSERT` lines. The single quotes are protected by another single quote.
 ( /^ *\(/ && /\) *[,;] *$/ ) || /^(INSERT|insert)/ {
   prev = "";
+  gsub( /\\\\\\\047/, "\\\\\\@@escapedquote@@" )  # single quote
+  gsub( /\\\\\047/, "\\\\@@realquote@@" )  # single quote
   gsub( /\\\047/, "\047\047" )  # single quote
+  gsub( /@@realquote@@/, "\047" )  # single quote
+  gsub( /@@escapedquote@@/, "\047\047" )  # single quote
   gsub( /\\n/, "\n" )
   gsub( /\\r/, "\r" )
   gsub( /\\"/, "\"" )
@@ -138,8 +142,8 @@ aInc == 1 && /PRIMARY KEY|primary key/ { next }
   print ");"
   next
 }
-# `KEY` lines are extracted from the `CREATE` block and stored in array for later print 
-# in a separate `CREATE KEY` command. The index name is prefixed by the table name to 
+# `KEY` lines are extracted from the `CREATE` block and stored in array for later print
+# in a separate `CREATE KEY` command. The index name is prefixed by the table name to
 # avoid a sqlite error for duplicate index name.
 /^(  (KEY|key)|\);)/ {
   if (prev) {
