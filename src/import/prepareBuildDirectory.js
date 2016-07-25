@@ -4,16 +4,8 @@ const path = require('path');
 
 module.exports = function importDump(targetFile, log, callback) {
   log.info(`Deleting old ${targetFile}`);
-  fs.unlink(targetFile, err => {
-    if (err) {
-      callback(err);
-      return;
-    }
-
+  fs.unlink(targetFile, () => {
     log.info('Create directory /build');
-    fs.mkdir(path.dirname(targetFile), () => {
-      if (err) callback(err);
-      else callback();
-    });
+    fs.mkdir(path.dirname(targetFile), () => callback());
   });
 };
