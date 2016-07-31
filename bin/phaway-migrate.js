@@ -3,7 +3,7 @@
 const program = require('commander');
 const pjson = require('../package.json');
 const migrate = require('../src/migrate');
-const createLoggerFactory = require('../src/utils/createLoggerFactory');
+const log = require('../src/utils/log');
 
 program
   .description('Migrate Phabricator issues to Github')
@@ -15,4 +15,6 @@ program
 // eslint-disable-next-line no-nested-ternary
 const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info');
 
-migrate(createLoggerFactory(logLevel));
+log.setLogLevel(logLevel);
+
+migrate();

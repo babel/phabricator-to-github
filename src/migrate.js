@@ -1,11 +1,10 @@
 'use strict';
 const eachIssue = require('./sqlite/eachIssue');
+const log = require('./utils/log')('migrate');
 
-module.exports = function migrate(loggerFactory) {
-  const log = loggerFactory('general');
+module.exports = function migrate() {
   eachIssue(
-    log,
-    (err, issue) => log.info(JSON.stringify(issue, null, 2)),
-    (err, count) => log.info(`complete ${count}`)
+    issue => log.info(JSON.stringify(issue, null, 2)),
+    count => log.info(`complete ${count}`)
   );
 };

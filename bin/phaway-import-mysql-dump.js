@@ -4,7 +4,7 @@ const program = require('commander');
 const pjson = require('../package.json');
 const path = require('path');
 const importMysqlDump = require('../src/importMysqlDump');
-const createLoggerFactory = require('../src/utils/createLoggerFactory');
+const log = require('../src/utils/log');
 
 function showErrorAndExit(error) {
   console.error(`  error: ${error}`); // eslint-disable-line no-console
@@ -30,4 +30,6 @@ if (!file) showErrorAndExit('no file given');
 // eslint-disable-next-line no-nested-ternary
 const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info');
 
-importMysqlDump(file, createLoggerFactory(logLevel));
+log.setLogLevel(logLevel);
+
+importMysqlDump(file);

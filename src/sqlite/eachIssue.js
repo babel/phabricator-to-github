@@ -1,6 +1,7 @@
 'use strict';
 const sqlite3 = require('sqlite3');
 const path = require('path');
+const log = require('../utils/log')('sqlite');
 
 const db = new sqlite3.Database(path.join(__dirname, '../../build/phabricator.db'));
 
@@ -26,12 +27,7 @@ INNER JOIN maniphest_transaction_comment AS mtc ON mt.commentPHID = mtc.phid
 WHERE mt.transactionType = "core:comment" AND mt.objectPHID = ?
 `;
 
-module.exports = function eachIssue(log, minId, callback, complete) {
-  if (typeof minId === 'function') {
-    complete = callback; // eslint-disable-line no-param-reassign
-    callback = minId; // eslint-disable-line no-param-reassign
-  }
-
+module.exports = function eachIssue(callback, complete) {
   const rowCallback = (err, row) => {
     const issue = row;
     if (err) {
@@ -45,7 +41,7 @@ module.exports = function eachIssue(log, minId, callback, complete) {
       issue.comments = rows;
 
       log.debug(row);
-      callback(err, row);
+      callback(row);
     });
   };
 
@@ -56,7 +52,7 @@ module.exports = function eachIssue(log, minId, callback, complete) {
     }
 
     log.verbose(`Retrieved ${count} rows from database.`);
-    complete(err, count);
+    complete(count);
   };
 
   db.each(ISSUE_QUERY, rowCallback, completeCallback);
