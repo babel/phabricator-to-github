@@ -68,10 +68,9 @@ module.exports = class DumpExecutor {
 
   _getOpenDatabase(callback) {
     if (!this._database) {
-      const sqlite = this.opts.debug ? sqlite3.verbose() : sqlite3;
       if (!this.opts.filename) throw Error('Missing options "filename" for DumpExecutor');
 
-      this._database = new sqlite.Database(this.opts.filename, () => {
+      this._database = new sqlite3.Database(this.opts.filename, () => {
         this._log.debug('Database opened');
         if (callback) callback(null, this._database);
       });
