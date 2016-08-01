@@ -16,6 +16,9 @@ SELECT
   mt.dateCreated AS created_at,
   mt.dateModified AS modified_at
 FROM maniphest_task AS mt
+-- exclude Parser issues
+LEFT JOIN edge ON mt.phid = edge.src AND edge.dst = 'PHID-PROJ-msdjjebxwkxh47dgivqi'
+WHERE edge.src IS NULL
 ORDER BY id
 `;
 
@@ -28,6 +31,7 @@ FROM maniphest_transaction AS mt
 INNER JOIN maniphest_transaction_comment AS mtc ON mt.commentPHID = mtc.phid
 WHERE mt.transactionType = "core:comment" AND mt.objectPHID = ?
 GROUP BY mtc.transactionPHID
+-- select only the latest version of the comment by sorting
 ORDER BY mtc.dateCreated, mtc.commentVersion
 `;
 
@@ -52,6 +56,15 @@ module.exports = function eachIssue(callback, complete) {
       if (issue.status !== 'open') {
         issue.closed = true;
         // TODO closed at
+      }
+
+      const labels = [];
+      if (
+        issue.status === 'invalid' ||
+        issue.status === 'duplicate' ||
+        issue.status === 'wontfix'
+      ) {
+        labels.push(issue.status);
       }
       delete issue.status;
 
