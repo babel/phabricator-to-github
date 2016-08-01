@@ -49,6 +49,7 @@ module.exports = function eachIssue(callback, complete) {
       }
 
       const issue = row;
+      issue.title = `${issue.title} (T${issue.id})`;
       issue.created_at = (new Date(issue.created_at * 1000)).toISOString();
       issue.modified_at = (new Date(issue.modified_at * 1000)).toISOString();
       delete issue.phid;
