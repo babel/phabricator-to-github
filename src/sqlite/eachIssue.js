@@ -18,7 +18,9 @@ SELECT
 FROM maniphest_task AS mt
 -- exclude Parser issues
 LEFT JOIN edge ON mt.phid = edge.src AND edge.dst = 'PHID-PROJ-msdjjebxwkxh47dgivqi'
-WHERE edge.src IS NULL
+WHERE edge.src IS NULL 
+-- exclude invalid issues
+AND mt.status != 'invalid'
 ORDER BY id
 `;
 
@@ -35,6 +37,46 @@ GROUP BY mtc.transactionPHID
 ORDER BY mtc.dateCreated, mtc.commentVersion
 `;
 
+const CLOSE_DATE_QUERY = `
+SELECT dateModified
+FROM maniphest_transaction
+WHERE objectPHID = ?
+AND transactionType='status'
+AND newValue != '"open"'
+ORDER BY dateCreated desc
+LIMIT 1
+`;
+
+function createGithubIssue(row, rows) {
+  const issue = Object.assign({}, row);
+  issue.title = `${issue.title} (T${issue.id})`;
+  issue.created_at = (new Date(issue.created_at * 1000)).toISOString();
+  issue.modified_at = (new Date(issue.modified_at * 1000)).toISOString();
+  if (issue.status !== 'open') issue.closed = true;
+
+  const labels = [];
+  if (
+    issue.status === 'duplicate' ||
+    issue.status === 'wontfix'
+  ) {
+    labels.push(issue.status);
+  }
+
+  const comments = rows || [];
+
+  comments.forEach(comment => {
+    comment.created_at = (new Date(comment.created_at * 1000)).toISOString();
+  });
+
+  issue.comments = comments;
+
+  delete issue.status;
+  delete issue.phid;
+
+  return issue;
+}
+
+
 module.exports = function eachIssue(callback, complete) {
   const rowCallback = (err, row) => {
     if (err) {
@@ -48,36 +90,25 @@ module.exports = function eachIssue(callback, complete) {
         return;
       }
 
-      const issue = row;
-      issue.title = `${issue.title} (T${issue.id})`;
-      issue.created_at = (new Date(issue.created_at * 1000)).toISOString();
-      issue.modified_at = (new Date(issue.modified_at * 1000)).toISOString();
-      delete issue.phid;
+      const issue = createGithubIssue(row, rows);
 
-      if (issue.status !== 'open') {
-        issue.closed = true;
-        // TODO closed at
+      if (issue.closed) {
+        db.get(CLOSE_DATE_QUERY, row.phid, (closeErr, dateRow) => {
+          if (closeErr) {
+            log.error(closeErr);
+            return;
+          }
+          if (!dateRow) {
+            log.error(`No close date found for ${row.phid}`);
+          } else {
+            issue.closed_at = (new Date(dateRow.dateModified * 1000)).toISOString();
+          }
+
+          callback(issue);
+        });
+      } else {
+        callback(issue);
       }
-
-      const labels = [];
-      if (
-        issue.status === 'invalid' ||
-        issue.status === 'duplicate' ||
-        issue.status === 'wontfix'
-      ) {
-        labels.push(issue.status);
-      }
-      delete issue.status;
-
-      const comments = rows || [];
-
-      comments.forEach(comment => {
-        comment.created_at = (new Date(comment.created_at * 1000)).toISOString();
-      });
-
-      issue.comments = comments;
-
-      callback(issue);
     });
   };
 
