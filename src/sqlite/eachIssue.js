@@ -41,8 +41,15 @@ const CLOSE_DATE_QUERY = `
 SELECT dateModified
 FROM maniphest_transaction
 WHERE objectPHID = ?
-AND transactionType='status'
-AND newValue != '"open"'
+AND (
+  (
+    transactionType = 'status' AND newValue != '"open"'
+  ) 
+  OR
+  (
+    transactionType = 'mergedinto'
+  )
+)
 ORDER BY dateCreated desc
 LIMIT 1
 `;
