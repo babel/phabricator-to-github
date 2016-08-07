@@ -54,7 +54,7 @@ ORDER BY dateCreated desc
 LIMIT 1
 `;
 
-function createGithubIssue(row, rows) {
+function createGithubIssue(row) {
   const issue = Object.assign({}, row);
   issue.title = `${issue.title} (T${issue.id})`;
   issue.created_at = (new Date(issue.created_at * 1000)).toISOString();
@@ -69,22 +69,24 @@ function createGithubIssue(row, rows) {
     labels.push(issue.status);
   }
 
-  const comments = rows || [];
-
-  comments.forEach(comment => {
-    comment.created_at = (new Date(comment.created_at * 1000)).toISOString();
-  });
-
-  issue.comments = comments;
-
   delete issue.status;
   delete issue.phid;
 
   return issue;
 }
 
+function createGithubComments(rows) {
+  let comments = rows || [];
 
-module.exports = function eachIssue(callback, complete) {
+  comments = comments.map(comment => ({
+    ...comment,
+    created_at: (new Date(comment.created_at * 1000)).toISOString(),
+  }));
+
+  return comments;
+}
+
+module.exports = function eachIssue(callback, limit) {
   const rowCallback = (err, row) => {
     if (err) {
       log.error(err);
@@ -97,7 +99,8 @@ module.exports = function eachIssue(callback, complete) {
         return;
       }
 
-      const issue = createGithubIssue(row, rows);
+      const issue = createGithubIssue(row);
+      const comments = createGithubComments(rows);
 
       if (issue.closed) {
         db.get(CLOSE_DATE_QUERY, row.phid, (closeErr, dateRow) => {
@@ -111,23 +114,16 @@ module.exports = function eachIssue(callback, complete) {
             issue.closed_at = (new Date(dateRow.dateModified * 1000)).toISOString();
           }
 
-          callback(issue);
+          callback(issue, comments);
         });
       } else {
-        callback(issue);
+        callback(issue, comments);
       }
     });
   };
 
-  const completeCallback = (err, count) => {
-    if (err) {
-      log.error(err);
-      return;
-    }
+  let query = ISSUE_QUERY;
+  if (limit) query += ` LIMIT ${limit}`;
 
-    log.verbose(`Retrieved ${count} rows from database.`);
-    complete(count);
-  };
-
-  db.each(ISSUE_QUERY, rowCallback, completeCallback);
+  db.each(query, rowCallback, (err) => { if (err) log.error(err); });
 };
