@@ -14,7 +14,7 @@ SELECT
   mt.status,
   mt.description AS body,
   mt.dateCreated AS created_at,
-  mt.dateModified AS modified_at
+  mt.dateModified AS updated_at
 FROM maniphest_task AS mt
 -- exclude Parser issues
 LEFT JOIN edge ON mt.phid = edge.src AND edge.dst = 'PHID-PROJ-msdjjebxwkxh47dgivqi'
@@ -58,7 +58,7 @@ function createGithubIssue(row) {
   const issue = Object.assign({}, row);
   issue.title = `${issue.title} (T${issue.id})`;
   issue.created_at = (new Date(issue.created_at * 1000)).toISOString();
-  issue.modified_at = (new Date(issue.modified_at * 1000)).toISOString();
+  issue.updated_at = (new Date(issue.updated_at * 1000)).toISOString();
   if (issue.status !== 'open') issue.closed = true;
 
   const labels = [];
@@ -71,6 +71,7 @@ function createGithubIssue(row) {
 
   delete issue.status;
   delete issue.phid;
+  delete issue.id;
 
   return issue;
 }
@@ -78,10 +79,11 @@ function createGithubIssue(row) {
 function createGithubComments(rows) {
   let comments = rows || [];
 
-  comments = comments.map(comment => ({
-    ...comment,
-    created_at: (new Date(comment.created_at * 1000)).toISOString(),
-  }));
+  comments = comments.map(comment => Object.assign(
+    {},
+    comment,
+    { created_at: (new Date(comment.created_at * 1000)).toISOString() }
+  ));
 
   return comments;
 }
@@ -125,5 +127,5 @@ module.exports = function eachIssue(callback, limit) {
   let query = ISSUE_QUERY;
   if (limit) query += ` LIMIT ${limit}`;
 
-  db.each(query, rowCallback, (err) => { if (err) log.error(err); });
+  db.each(query, rowCallback, err => { if (err) log.error(err); });
 };
