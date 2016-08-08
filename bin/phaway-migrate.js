@@ -2,7 +2,6 @@
 'use strict';
 const program = require('commander');
 const pjson = require('../package.json');
-const migrate = require('../src/migrate');
 const log = require('../src/utils/log');
 
 program
@@ -16,5 +15,8 @@ program
 const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info');
 
 log.setLogLevel(logLevel);
+
+// require after setting loglevel
+const migrate = require('../src/migrate');
 
 migrate();
