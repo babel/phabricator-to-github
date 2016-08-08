@@ -2,9 +2,10 @@
 const path = require('path');
 const exec = require('child_process').exec;
 const prepareBuildDirectory = require('./prepareBuildDirectory');
+const log = require('../utils/log')('convert');
 
-module.exports = function convertToSqlite(file, targetFile, log, callback) {
-  prepareBuildDirectory(targetFile, log, err => {
+module.exports = function convertToSqlite(file, targetFile, callback) {
+  prepareBuildDirectory(targetFile, err => {
     if (err) {
       callback(err);
       return;

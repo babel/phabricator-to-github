@@ -1,5 +1,6 @@
 'use strict';
 const sqlite3 = require('sqlite3');
+const log = require('../utils/log')('sqlite');
 
 const QUERY_START_TOKENS = [
   'PRAGMA ',
@@ -12,8 +13,7 @@ const QUERY_START_TOKENS = [
 
 module.exports = class DumpExecutor {
 
-  constructor(opts, log) {
-    this._log = log;
+  constructor(opts) {
     this._queuedLines = [];
     this._queuedQueries = [];
     this._database = null;
@@ -68,11 +68,10 @@ module.exports = class DumpExecutor {
 
   _getOpenDatabase(callback) {
     if (!this._database) {
-      const sqlite = this.opts.debug ? sqlite3.verbose() : sqlite3;
       if (!this.opts.filename) throw Error('Missing options "filename" for DumpExecutor');
 
-      this._database = new sqlite.Database(this.opts.filename, () => {
-        this._log.debug('Database opened');
+      this._database = new sqlite3.Database(this.opts.filename, () => {
+        log.debug('Database opened');
         if (callback) callback(null, this._database);
       });
     }
@@ -88,10 +87,10 @@ module.exports = class DumpExecutor {
 
     this._getOpenDatabase((err, database) => {
       this._queuedQueries.forEach(query => {
-        this._log.debug(`#${++this._queryCounter} Execute query`, query);
+        log.debug(`#${++this._queryCounter} Execute query`, query);
         database.exec(query, dbErr => {
           if (err) {
-            this._log.error('Query failed', { query, dbErr });
+            log.error('Query failed', { query, dbErr });
             throw err;
           }
         });
