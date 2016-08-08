@@ -1,6 +1,6 @@
 'use strict';
 const https = require('https');
-const config = require('../../config/config');
+const config = require('../../config/config'); // eslint-disable-line import/no-unresolved
 const log = require('../utils/log')('github');
 
 module.exports = function importIssue(issue, comments = []) {
