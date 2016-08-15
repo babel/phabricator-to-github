@@ -32,7 +32,9 @@
   "homepage": "https://github.com/babel/phabricator-to-github#readme",
   "dependencies": {
     "commander": "^2.9.0",
+    "fs-extra": "^0.30.0",
     "github-api": "^2.3.0",
+    "glob": "^7.0.5",
     "sqlite3": "^3.1.4",
     "winston": "^2.2.0"
   },
