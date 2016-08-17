@@ -18,6 +18,23 @@ module.exports = function filterGithubComments() {
     );
   });
 
-  fs.writeFileSync(path.join(__dirname, '../comments.json'), JSON.stringify(comments));
+  const commentsByIssue = {};
+
+  comments.forEach(comment => {
+    const issueNumber = comment.issue_url.match(/\/(\d+)$/i)[1];
+
+    commentsByIssue[issueNumber] = [
+      ...(commentsByIssue[issueNumber] || []),
+      comment,
+    ];
+  });
+
+  Object.keys(commentsByIssue).forEach(issueNumber => {
+    commentsByIssue[issueNumber] = commentsByIssue[issueNumber].sort(
+      (a, b) => new Date(a.created_at) - new Date(b.created_at)
+    );
+  });
+
+  fs.writeFileSync(path.join(__dirname, '../comments.json'), JSON.stringify(commentsByIssue));
   log.info('All issues filtered and written to comments.json');
 };
