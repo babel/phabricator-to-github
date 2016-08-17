@@ -71,7 +71,6 @@ function createGithubIssue(row) {
 
   delete issue.status;
   delete issue.phid;
-  delete issue.id;
 
   return issue;
 }
