@@ -11,6 +11,7 @@ module.exports = function filterGithubIssues() {
   let issues = [];
 
   files.forEach(file => {
+    log.info(`Import file ${file}`);
     const partlyIssues = JSON.parse(fs.readFileSync(file));
     issues = issues.concat(partlyIssues.filter(issue => !issue.pull_request));
   });
