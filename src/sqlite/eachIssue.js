@@ -56,7 +56,6 @@ LIMIT 1
 
 function createGithubIssue(row) {
   const issue = Object.assign({}, row);
-  issue.title = `${issue.title} (T${issue.id})`;
   issue.created_at = (new Date(issue.created_at * 1000)).toISOString();
   issue.updated_at = (new Date(issue.updated_at * 1000)).toISOString();
   if (issue.status !== 'open') issue.closed = true;

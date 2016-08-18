@@ -21,6 +21,7 @@ module.exports = function migrate() {
 
       delete issue.creator;
       delete issue.id;
+      issue.title = `${issue.title} (T${issue.id})`;
 
       comments.forEach(comment => {
         delete comment.creator;
