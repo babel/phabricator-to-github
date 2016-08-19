@@ -11,8 +11,7 @@
     "lint": "eslint src/ bin/",
     "precommit": "npm run check",
     "preversion": "npm run check",
-    "test": "ava tests/",
-    "update-mysql2sqlite": "curl -o bin/mysql2sqlite https://raw.githubusercontent.com/dumblob/mysql2sqlite/master/mysql2sqlite && chmod +x bin/mysql2sqlite"
+    "test": "ava tests/"
   },
   "repository": {
     "type": "git",
@@ -31,6 +30,7 @@
   },
   "homepage": "https://github.com/babel/phabricator-to-github#readme",
   "dependencies": {
+    "byline": "^5.0.0",
     "commander": "^2.9.0",
     "fs-extra": "^0.30.0",
     "github-api": "^2.3.0",
