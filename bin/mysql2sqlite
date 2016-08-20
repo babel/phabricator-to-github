@@ -47,13 +47,24 @@ inView != 0 { next }
 # Print all `INSERT` lines. The single quotes are protected by another single quote.
 ( /^ *\(/ && /\) *[,;] *$/ ) || /^(INSERT|insert)/ {
   prev = "";
-  gsub( /\\\\\\\047/, "\\\\\\@@escapedquote@@" )  # single quote
-  gsub( /\\\\\047/, "\\\\@@realquote@@" )  # single quote
-  gsub( /\\\047/, "\047\047" )  # single quote
+  gsub( /\\\\\\\047/, "\\\\\\@@escapedquote@@" )  # single quote ///'
+  gsub( /\\\\\047/, "\\\\@@realquote@@" )  # single quote //'
+  gsub( /\\\047/, "\047\047" )  # single quote /'
   gsub( /@@realquote@@/, "\047" )  # single quote
-  gsub( /@@escapedquote@@/, "\047\047" )  # single quote
+  gsub( /\\@@escapedquote@@/, "\047\047" )  # single quote
+  gsub( /\\\\\\\\n/, "\\\\@@quotednewline@@" )
+  gsub( /\\\\\\\\r/, "\\\\@@quotedcr@@" )
+  gsub( /\\\\\\n/, "\\\\@@realnewline@@" )
+  gsub( /\\\\\\r/, "\\\\@@realcr@@" )
+  gsub( /\\\\n/, "@@quotednewline@@" )
+  gsub( /\\\\r/, "@@quotedcr@@" )
+  gsub( /\\\\\\r/, "@@realcr@@" )
   gsub( /\\n/, "\n" )
+  gsub( /@@realnewline@@/, "\n" )
   gsub( /\\r/, "\r" )
+  gsub( /@@realcr@@/, "\r" )
+  gsub( /@@quotednewline@@/, "\\\\n" )
+  gsub( /@@quotedcr@@/, "\\\\r" )
   gsub( /\\"/, "\"" )
   gsub( /\\\\/, "\\" )
   gsub( /\\\032/, "\032" )  # substitute

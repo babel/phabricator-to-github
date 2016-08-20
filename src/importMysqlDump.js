@@ -22,7 +22,7 @@ module.exports = function importDump(file) {
 
       log.info('Start importing data into sqlite');
       let stream = fs.createReadStream(targetFile, { encoding: 'utf8' });
-      stream = byline.createStream(stream);
+      stream = byline.createStream(stream, { keepEmptyLines: true });
 
       stream
         .on('error', log.error)
