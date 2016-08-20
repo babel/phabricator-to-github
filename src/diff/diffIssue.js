@@ -2,10 +2,8 @@
 const log = require('../utils/log')('diff');
 
 module.exports = function diffIssue(phabiractorIssue, githubIssue) {
-  // log.debug(JSON.stringify(phabiractorIssue,null,4));
-  // log.debug(JSON.stringify(githubIssue,null,4));
   if (phabiractorIssue.id !== githubIssue.number) {
-    throw new Error('Upps');
+    throw new Error('Initial import seems to be incorrect');
   }
 
   const diffs = [];
@@ -17,12 +15,11 @@ module.exports = function diffIssue(phabiractorIssue, githubIssue) {
   }
 
   if (phabiractorIssue.title !== githubIssue.title) {
-    diffs.push('title');
+    diffs.push(['update_title', phabiractorIssue.title]);
   }
 
   if (diffs.length > 0) {
-    log.debug(phabiractorIssue.id);
-    log.debug(diffs);
+    log.debug(phabiractorIssue.id, diffs);
   }
 
   return diffs;

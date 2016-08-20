@@ -21,14 +21,16 @@ LEFT JOIN edge ON mt.phid = edge.src AND edge.dst = 'PHID-PROJ-msdjjebxwkxh47dgi
 WHERE edge.src IS NULL 
 -- exclude invalid issues
 AND mt.status != 'invalid'
-ORDER BY id
 `;
+
+const ISSUE_ORDER = ' ORDER BY id';
 
 const COMMENT_QUERY = `
 SELECT
   mtc.content AS body,
-  mtc.authorPHID as creator,
-  mtc.dateCreated AS created_at
+  mtc.authorPHID AS creator,
+  mtc.dateCreated AS created_at,
+  mtc.commentVersion AS commentVersion
 FROM maniphest_transaction AS mt
 INNER JOIN maniphest_transaction_comment AS mtc ON mt.commentPHID = mtc.phid
 WHERE mt.transactionType = "core:comment" AND mt.objectPHID = ?
@@ -86,7 +88,7 @@ function createGithubComments(rows) {
   return comments;
 }
 
-module.exports = function eachIssue(callback, limit) {
+module.exports = function eachIssue(callback, filter) {
   const rowCallback = (err, row) => {
     if (err) {
       log.error(err);
@@ -123,7 +125,8 @@ module.exports = function eachIssue(callback, limit) {
   };
 
   let query = ISSUE_QUERY;
-  if (limit) query += ` LIMIT ${limit}`;
+  if (filter) query += ` AND ${filter}`;
+  query += ISSUE_ORDER;
 
   db.each(query, rowCallback, err => { if (err) log.error(err); });
 };
