@@ -34,7 +34,7 @@ INNER JOIN maniphest_transaction_comment AS mtc ON mt.commentPHID = mtc.phid
 WHERE mt.transactionType = "core:comment" AND mt.objectPHID = ?
 GROUP BY mtc.transactionPHID
 -- select only the latest version of the comment by sorting
-ORDER BY mtc.dateCreated, mtc.commentVersion
+ORDER BY mtc.id, mtc.commentVersion
 `;
 
 const CLOSE_DATE_QUERY = `
