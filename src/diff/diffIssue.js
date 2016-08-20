@@ -16,6 +16,10 @@ module.exports = function diffIssue(phabiractorIssue, githubIssue) {
     diffs.push('reopen');
   }
 
+  if (phabiractorIssue.title !== githubIssue.title) {
+    diffs.push('title');
+  }
+
   if (diffs.length > 0) {
     log.debug(phabiractorIssue.id);
     log.debug(diffs);
