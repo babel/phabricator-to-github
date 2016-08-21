@@ -26,8 +26,8 @@ module.exports = function migrate() {
         return;
       }
 
-      diffIssue(issue, issues[issue.id]);
-      diffComments(comments, githubComments[issue.id], issues[issue.id]);
+      const issueDiffs = diffIssue(issue, issues[issue.id]);
+      const commentDiffs = diffComments(comments, githubComments[issue.id], issues[issue.id]);
 
       delete issue.creator;
       delete issue.id;

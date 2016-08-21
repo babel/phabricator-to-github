@@ -24,23 +24,20 @@ module.exports = function diffComments(phabiractorComments, githubComments = [],
   phabiractorComments.forEach((pComment, index) => {
     if (!githubComments[index]) {
       diffs.push(['create_comment', pComment.body]);
-    } else if (/* pComment.commentVersion > 1 && */pComment.body !== githubComments[index].body) {
-      // TODO enable commentVersion check
-      // Currently disabled to see if this diffing works and if we catched all quote/newline issues
+    } else if (pComment.commentVersion > 1 && pComment.body !== githubComments[index].body) {
+
       const unmigratedBody = pComment.body.replace(
         /^> Comment originaly made by \*\*.+\*\* on \/\/\d{4}(-\d{2}){2} \d{2}(:\d{2}){2}\/\/\n\n/,
         ''
       ).replace(/\r/g, '');
       if (unmigratedBody !== githubComments[index].body.replace(/\r/g, '')) {
-        log.debug(JSON.stringify(pComment, null, 4));
-        githubComments[index].user = null;
-        log.debug(JSON.stringify(githubComments[index], null, 4));
+        throw new Error('Imported comment changed in phabricator');
       }
     }
   });
 
   if (diffs.length > 0) {
-    log.debug(githubIssue.number, diffs);
+    //log.debug(githubIssue.number, diffs);
   }
 
   return diffs;
