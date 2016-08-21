@@ -21,6 +21,8 @@ LEFT JOIN edge ON mt.phid = edge.src AND edge.dst = 'PHID-PROJ-msdjjebxwkxh47dgi
 WHERE edge.src IS NULL 
 -- exclude invalid issues
 AND mt.status != 'invalid'
+-- Do not export hidden tasks
+AND mt.viewPolicy = 'public'
 `;
 
 const ISSUE_ORDER = ' ORDER BY id';
