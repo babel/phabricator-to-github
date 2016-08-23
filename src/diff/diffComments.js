@@ -1,5 +1,4 @@
 'use strict';
-const log = require('../utils/log')('diff');
 
 module.exports = function diffComments(phabiractorComments, githubComments = [], githubIssue) {
   if (
@@ -8,7 +7,7 @@ module.exports = function diffComments(phabiractorComments, githubComments = [],
     phabiractorComments.length === 0
   ) {
     // no comments nowhere
-    return [];
+    return null;
   }
 
   if (githubComments.length !== githubIssue.comments) {
@@ -19,13 +18,12 @@ module.exports = function diffComments(phabiractorComments, githubComments = [],
     throw new Error('Comments in phabricator missing/removed');
   }
 
-  const diffs = [];
+  const commentsToSend = [];
 
   phabiractorComments.forEach((pComment, index) => {
     if (!githubComments[index]) {
-      diffs.push(['create_comment', pComment.body]);
+      commentsToSend.push({ body: pComment.body });
     } else if (pComment.commentVersion > 1 && pComment.body !== githubComments[index].body) {
-
       const unmigratedBody = pComment.body.replace(
         /^> Comment originaly made by \*\*.+\*\* on \/\/\d{4}(-\d{2}){2} \d{2}(:\d{2}){2}\/\/\n\n/,
         ''
@@ -36,9 +34,5 @@ module.exports = function diffComments(phabiractorComments, githubComments = [],
     }
   });
 
-  if (diffs.length > 0) {
-    //log.debug(githubIssue.number, diffs);
-  }
-
-  return diffs;
+  return commentsToSend.length > 0 ? commentsToSend : null;
 };

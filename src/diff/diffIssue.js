@@ -1,26 +1,23 @@
 'use strict';
-const log = require('../utils/log')('diff');
 
 module.exports = function diffIssue(phabiractorIssue, githubIssue) {
   if (phabiractorIssue.id !== githubIssue.number) {
     throw new Error('Initial import seems to be incorrect');
   }
 
-  const diffs = [];
+  const issueToSend = {};
 
   if (phabiractorIssue.closed && githubIssue.state !== 'closed') {
-    diffs.push('close');
+    issueToSend.state = 'closed';
   } else if (!phabiractorIssue.closed && githubIssue.state === 'closed') {
-    diffs.push('reopen');
+    issueToSend.state = 'open';
   }
 
   if (phabiractorIssue.title !== githubIssue.title) {
-    diffs.push(['update_title', phabiractorIssue.title]);
+    issueToSend.title = phabiractorIssue.title;
   }
 
-  if (diffs.length > 0) {
-    log.debug(phabiractorIssue.id, diffs);
-  }
+  if (Object.keys(issueToSend).length === 0) return null;
 
-  return diffs;
+  return issueToSend;
 };
