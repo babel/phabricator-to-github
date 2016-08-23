@@ -30,6 +30,7 @@
   },
   "homepage": "https://github.com/babel/phabricator-to-github#readme",
   "dependencies": {
+    "async": "^2.0.1",
     "byline": "^5.0.0",
     "commander": "^2.9.0",
     "fs-extra": "^0.30.0",

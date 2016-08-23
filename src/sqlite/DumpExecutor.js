@@ -1,5 +1,6 @@
 'use strict';
 const sqlite3 = require('sqlite3');
+const async = require('async');
 const log = require('../utils/log')('sqlite');
 
 const QUERY_START_TOKENS = [
@@ -15,11 +16,9 @@ module.exports = class DumpExecutor {
 
   constructor(opts) {
     this._queuedLines = [];
-    this._queuedQueries = [];
+    this._queuedQueries = async.queue(this._tryExecute.bind(this), 1);
     this._database = null;
     this._queryCounter = 0;
-
-    this.initialQueryQueue = [];
 
     this.opts = opts;
 
@@ -29,7 +28,6 @@ module.exports = class DumpExecutor {
   finish() {
     this._pushLinesToQuery();
     this._queuedLines = [];
-    this._tryExecute();
   }
 
   _startsNewQuery(line) {
@@ -37,11 +35,8 @@ module.exports = class DumpExecutor {
   }
 
   addLine(line) {
-    if (!this._database) this._getOpenDatabase();
-
     if (this._queuedLines.length > 0 && this._startsNewQuery(line)) {
       this._pushLinesToQuery();
-      this._tryExecute();
       this._queuedLines = [line];
       return;
     }
@@ -59,43 +54,27 @@ module.exports = class DumpExecutor {
 
       this._database = new sqlite3.Database(this.opts.filename, () => {
         log.debug('Database opened');
-        if (this.initialQueryQueue.length > 0) {
-          log.debug(`Sending ${this.initialQueryQueue.length} initial queries`);
-          this.initialQueryQueue.forEach(
-            cb => cb(null, this._database)
-          );
-          log.debug('Done initial queries');
-          this.initialQueryQueue = [];
-        }
 
         if (callback) callback(null, this._database);
       });
-    }
-
-    if (callback) {
+    } else if (callback) {
       if (this._database.open) callback(null, this._database);
       else {
-        log.debug('Adding initial query');
-        this.initialQueryQueue.push(callback);
+        throw new Error('This should not happen');
       }
     }
   }
 
-  _tryExecute() {
-    if (this._queuedQueries.length === 0) return;
-
+  _tryExecute(query, done) {
     this._getOpenDatabase((err, database) => {
-      this._queuedQueries.forEach(query => {
-        log.debug(`#${++this._queryCounter} Execute query`, JSON.stringify(query));
-        database.exec(query, dbErr => {
-          if (err) {
-            log.error('Query failed', { query, dbErr });
-            throw err;
-          }
-        });
+      log.debug(`#${++this._queryCounter} Execute query`, JSON.stringify(query));
+      database.exec(query, dbErr => {
+        if (err) {
+          log.error('Query failed', { query, dbErr });
+          throw err;
+        }
+        done();
       });
-
-      this._queuedQueries = [];
     });
   }
 };
