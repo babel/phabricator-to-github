@@ -35,7 +35,9 @@ SELECT
   mtc.commentVersion AS commentVersion
 FROM maniphest_transaction AS mt
 INNER JOIN maniphest_transaction_comment AS mtc ON mt.commentPHID = mtc.phid
-WHERE mt.transactionType = "core:comment" AND mt.objectPHID = ?
+WHERE mt.transactionType = "core:comment" AND 
+  mt.objectPHID = ? AND
+  mtc.isDeleted = 0
 GROUP BY mtc.transactionPHID
 -- select only the latest version of the comment by sorting
 ORDER BY mtc.id, mtc.commentVersion
