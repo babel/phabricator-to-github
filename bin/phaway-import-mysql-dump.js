@@ -1,9 +1,8 @@
 #!/usr/bin/env node
 'use strict';
 const program = require('commander');
-const pjson = require('../package.json');
 const path = require('path');
-const importMysqlDump = require('../src/importMysqlDump');
+const pjson = require('../package.json');
 const log = require('../src/utils/log');
 
 function showErrorAndExit(error) {
@@ -31,5 +30,8 @@ if (!file) showErrorAndExit('no file given');
 const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info');
 
 log.setLogLevel(logLevel);
+
+// require after setting loglevel
+const importMysqlDump = require('../src/importMysqlDump');
 
 importMysqlDump(file);
