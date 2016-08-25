@@ -10,6 +10,6 @@ program
   .command('filter-github-issues', 'Filter and consolidate previously dumped issues')
   .command('filter-github-comments', 'Filter and consolidate previously dumped comments')
   .command('import-mysql-dump <file>', 'Import phabricator mysql dump into sqlite')
-  .command('migrate', 'Migrate Phabricator issues to Github')
+  .command('migrate-old', 'Migrate Changed phabricator issues to Github')
   .parse(process.argv);
 

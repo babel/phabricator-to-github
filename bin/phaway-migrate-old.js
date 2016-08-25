@@ -17,6 +17,6 @@ const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info'
 log.setLogLevel(logLevel);
 
 // require after setting loglevel
-const migrate = require('../src/migrate');
+const migrateOld = require('../src/migrateOld');
 
-migrate();
+migrateOld();

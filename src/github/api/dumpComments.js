@@ -2,8 +2,8 @@
 const https = require('https');
 const fs = require('fs');
 const path = require('path');
-const config = require('../../config/config'); // eslint-disable-line import/no-unresolved
-const log = require('../utils/log')('github');
+const config = require('../../../config/config'); // eslint-disable-line import/no-unresolved
+const log = require('../../utils/log')('github');
 
 const linkRegExp = /<https:\/\/api\.github\.com\/[^>]+page=(\d+)>; rel="last"/i;
 

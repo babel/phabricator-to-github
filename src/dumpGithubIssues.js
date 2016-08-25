@@ -1,7 +1,7 @@
 'use strict';
 const fs = require('fs-extra');
 const path = require('path');
-const dumpIssues = require('./github/dumpIssues');
+const dumpIssues = require('./github/api/dumpIssues');
 const log = require('./utils/log')('dump-issues');
 
 const issueDirectory = path.join(__dirname, '../issues');

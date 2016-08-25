@@ -1,6 +1,7 @@
 'use strict';
 const sqlite3 = require('sqlite3');
 const path = require('path');
+const async = require('async');
 const log = require('../utils/log')('sqlite');
 
 const db = new sqlite3.Database(path.join(__dirname, '../../build/phabricator.db'));
@@ -92,13 +93,8 @@ function createGithubComments(rows) {
   return comments;
 }
 
-module.exports = function eachIssue(callback, filter) {
-  const rowCallback = (err, row) => {
-    if (err) {
-      log.error(err);
-      return;
-    }
-
+module.exports = function eachIssue(callback, complete, filter) {
+  const queueWorker = (row, done) => {
     db.all(COMMENT_QUERY, row.phid, (commentErr, rows) => {
       if (commentErr) {
         log.error(commentErr);
@@ -120,12 +116,25 @@ module.exports = function eachIssue(callback, filter) {
             issue.closed_at = (new Date(dateRow.dateModified * 1000)).toISOString();
           }
 
-          callback(issue, comments);
+          callback(issue, comments, done);
         });
       } else {
-        callback(issue, comments);
+        callback(issue, comments, done);
       }
     });
+  };
+
+  const issueQueue = async.queue(queueWorker, 1);
+
+  issueQueue.drain = complete;
+
+  const rowCallback = (err, row) => {
+    if (err) {
+      log.error(err);
+      return;
+    }
+
+    issueQueue.push(row);
   };
 
   let query = ISSUE_QUERY;

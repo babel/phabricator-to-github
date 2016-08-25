@@ -1,7 +1,7 @@
 'use strict';
 const https = require('https');
-const config = require('../../config/config'); // eslint-disable-line import/no-unresolved
-const log = require('../utils/log')('github');
+const config = require('../../../config/config'); // eslint-disable-line import/no-unresolved
+const log = require('../../utils/log')('github');
 
 module.exports = function importIssue(issue, comments = []) {
   const options = {
@@ -21,5 +21,6 @@ module.exports = function importIssue(issue, comments = []) {
     response.on('end', () => log.info(str));
   };
 
-  https.request(options, callback).end(JSON.stringify({ issue, comments }));
+  https.request(options, callback)
+    .end(JSON.stringify({ issue, comments }));
 };
