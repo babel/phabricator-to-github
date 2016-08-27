@@ -10,14 +10,14 @@ const byline = require('byline');
 const targetFile = path.join(__dirname, '../build/sqlitedump.sql');
 const dbFile = path.join(__dirname, '../build/phabricator.db');
 
-module.exports = function importDump(file) {
+module.exports = function importDump(file, clear) {
   convertToSqlite(file, targetFile, err => {
     if (err) {
       log.error(err);
       return;
     }
 
-    dropDatabase(dbFile, () => {
+    function doImport() {
       const executor = new DumpExecutor({ debug: true, filename: dbFile });
 
       log.info('Start importing data into sqlite');
@@ -31,6 +31,12 @@ module.exports = function importDump(file) {
           executor.finish();
           log.info('Finished import');
         });
-    });
+    }
+
+    if (clear) {
+      dropDatabase(dbFile, doImport);
+    } else {
+      doImport();
+    }
   });
 };

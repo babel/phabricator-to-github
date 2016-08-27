@@ -17,6 +17,7 @@ program
   .version(pjson.version)
   .description('Import phabricator mysql dump into sqlite')
   .arguments('<file>')
+  .option('-n, --no-clear', 'Do not clear db before')
   .option('-v, --verbose', 'Change log level to verbose')
   .option('-d, --debug', 'Change log level to debug')
   .action(argFile => {
@@ -34,4 +35,4 @@ log.setLogLevel(logLevel);
 // require after setting loglevel
 const importMysqlDump = require('../src/importMysqlDump');
 
-importMysqlDump(file);
+importMysqlDump(file, program.clear !== false);
