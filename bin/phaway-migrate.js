@@ -5,7 +5,7 @@ const pjson = require('../package.json');
 const log = require('../src/utils/log');
 
 program
-  .description('Migrate changed phabricator issues to Github')
+  .description('Migrate new phabricator issues to Github')
   .version(pjson.version)
   .option('-v, --verbose', 'Change log level to verbose')
   .option('-d, --debug', 'Change log level to debug')
@@ -17,6 +17,6 @@ const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info'
 log.setLogLevel(logLevel);
 
 // require after setting loglevel
-const migrateOld = require('../src/migrateOld');
+const migrate = require('../src/migrate');
 
-migrateOld();
+migrate();
