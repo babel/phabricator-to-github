@@ -14,10 +14,10 @@ function getUser(id, cb) {
 }
 
 function formatName(user) {
-  let name = user.githubRealname || user.realname;
+  let name = user.githubRealname || `${user.realname} (${user.username})`;
 
   if (user.githubUsername) {
-    name += ` (@${user.githubUsername})`;
+    name = `@${user.githubUsername}`;
   }
 
   return name;
