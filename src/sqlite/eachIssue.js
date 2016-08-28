@@ -77,12 +77,18 @@ function createGithubIssue(row, dateHeader, callback) {
   }
 
   delete issue.status;
-  delete issue.phid;
 
-  getMessageHeader('Issue', issue.authorPHID, dateHeader ? issue.created_at : null, header => {
-    issue.header = header;
-    callback(issue);
-  });
+  getMessageHeader(
+    'Issue',
+    issue.phid,
+    issue.authorPHID,
+    dateHeader ? issue.created_at : null,
+    header => {
+      issue.header = header;
+      delete issue.phid;
+      callback(issue);
+    }
+  );
 }
 
 function createGithubComments(rows, dateHeader, callback) {
@@ -90,7 +96,7 @@ function createGithubComments(rows, dateHeader, callback) {
 
   async.map(comments, (comment, done) => {
     const createdAt = (new Date(comment.created_at * 1000)).toISOString();
-    getMessageHeader('Comment', comment.authorPHID, dateHeader ? createdAt : null, header => {
+    getMessageHeader('Comment', null, comment.authorPHID, dateHeader ? createdAt : null, header => {
       comment.header = header;
       done(null, Object.assign(
         {},
