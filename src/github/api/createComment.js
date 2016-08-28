@@ -4,7 +4,7 @@ const config = require('../../../config/config'); // eslint-disable-line import/
 const log = require('../../utils/log')('github');
 
 module.exports = function createComment(issueId, comment, callback, retry = true) {
-  comment.body = comment.body.replace(/@/g, '');
+  if (config.safeMode) comment.body = comment.body.replace(/@/g, '');
   const options = {
     host: 'api.github.com',
     path: `/repos/${config.repository}/issues/${issueId}/comments`,
