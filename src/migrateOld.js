@@ -6,7 +6,6 @@ const diffComments = require('./diff/diffComments');
 const log = require('./utils/log')('migrate');
 const issues = require('../issues.json');
 const githubComments = require('../comments.json');
-
 const sendIssueChanges = require('./github/sendIssueChanges');
 const editIssue = require('./github/api/editIssue');
 const createComment = require('./github/api/createComment');
@@ -58,6 +57,7 @@ module.exports = function migrateOld() {
       log.info('Starting send queue');
       changeQueue.resume();
     },
-    'mt.id <= 3086'
+    'mt.id <= 3086',
+    true
   );
 };

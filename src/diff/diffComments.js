@@ -22,7 +22,7 @@ module.exports = function diffComments(phabiractorComments, githubComments = [],
 
   phabiractorComments.forEach((pComment, index) => {
     if (!githubComments[index]) {
-      commentsToSend.push({ body: pComment.body });
+      commentsToSend.push({ body: (pComment.header || '') + pComment.body });
     } else if (pComment.commentVersion > 1 && pComment.body !== githubComments[index].body) {
       const unmigratedBody = pComment.body.replace(
         /^> Comment originaly made by \*\*.+\*\* on \/\/\d{4}(-\d{2}){2} \d{2}(:\d{2}){2}\/\/\n\n/,

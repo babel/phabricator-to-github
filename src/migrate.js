@@ -11,12 +11,14 @@ module.exports = function migrateOld() {
       // log.debug(issue);
       // log.debug(comments);
 
-      delete issue.creator;
+      delete issue.authorPHID;
       delete issue.id;
       issue.title = `${issue.title} (T${issue.id})`;
+      issue.body = (issue.header || '') + issue.body;
+      delete issue.header;
 
       comments.forEach(comment => {
-        delete comment.creator;
+        delete comment.authorPHID;
         delete comment.commentVersion;
       });
 

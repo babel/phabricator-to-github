@@ -10,14 +10,14 @@ SELECT
   u.phid,
   u.userName AS username,
   u.realName AS realname,
-  uea.username AS github_username,
-  uea.realName AS github_realname
+  uea.username AS githubUsername,
+  uea.realName AS githubRealname
 FROM user AS u
   LEFT JOIN user_externalaccount AS uea ON u.phid = uea.userPHID AND uea.accountType = 'github'
 WHERE
   u.isApproved = 1 AND
-  u.isDisabled = 0 AND
-  u.isSystemAgent = 0
+  u.isDisabled = 0
+  -- u.isSystemAgent = 0
 `;
 
 module.exports = function getUsers(callback) {

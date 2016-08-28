@@ -3,6 +3,7 @@ const sqlite3 = require('sqlite3');
 const path = require('path');
 const async = require('async');
 const log = require('../utils/log')('sqlite');
+const getMessageHeader = require('../utils/getMessageHeader');
 
 const db = new sqlite3.Database(path.join(__dirname, '../../build/phabricator.db'));
 
@@ -10,7 +11,7 @@ const ISSUE_QUERY = `
 SELECT
   mt.id,
   mt.phid,
-  mt.authorPHID as creator,
+  mt.authorPHID,
   mt.title,
   mt.status,
   mt.description AS body,
@@ -31,7 +32,7 @@ const ISSUE_ORDER = ' ORDER BY id';
 const COMMENT_QUERY = `
 SELECT
   mtc.content AS body,
-  mtc.authorPHID AS creator,
+  mtc.authorPHID,
   mtc.dateCreated AS created_at,
   mtc.commentVersion AS commentVersion
 FROM maniphest_transaction AS mt
@@ -61,7 +62,7 @@ ORDER BY dateCreated desc
 LIMIT 1
 `;
 
-function createGithubIssue(row) {
+function createGithubIssue(row, dateHeader, callback) {
   const issue = Object.assign({}, row);
   issue.created_at = (new Date(issue.created_at * 1000)).toISOString();
   issue.updated_at = (new Date(issue.updated_at * 1000)).toISOString();
@@ -78,22 +79,29 @@ function createGithubIssue(row) {
   delete issue.status;
   delete issue.phid;
 
-  return issue;
+  getMessageHeader('Issue', issue.authorPHID, dateHeader ? issue.created_at : null, header => {
+    issue.header = header;
+    callback(issue);
+  });
 }
 
-function createGithubComments(rows) {
-  let comments = rows || [];
+function createGithubComments(rows, dateHeader, callback) {
+  const comments = rows || [];
 
-  comments = comments.map(comment => Object.assign(
-    {},
-    comment,
-    { created_at: (new Date(comment.created_at * 1000)).toISOString() }
-  ));
-
-  return comments;
+  async.map(comments, (comment, done) => {
+    const createdAt = (new Date(comment.created_at * 1000)).toISOString();
+    getMessageHeader('Comment', comment.authorPHID, dateHeader ? createdAt : null, header => {
+      comment.header = header;
+      done(null, Object.assign(
+        {},
+        comment,
+        { created_at: createdAt }
+      ));
+    });
+  }, (err, finalComments) => callback(finalComments));
 }
 
-module.exports = function eachIssue(callback, complete, filter) {
+module.exports = function eachIssue(callback, complete, filter, dateHeader = false) {
   const queueWorker = (row, done) => {
     db.all(COMMENT_QUERY, row.phid, (commentErr, rows) => {
       if (commentErr) {
@@ -101,26 +109,27 @@ module.exports = function eachIssue(callback, complete, filter) {
         return;
       }
 
-      const issue = createGithubIssue(row);
-      const comments = createGithubComments(rows);
+      createGithubIssue(row, dateHeader, issue => {
+        createGithubComments(rows, dateHeader, comments => {
+          if (issue.closed) {
+            db.get(CLOSE_DATE_QUERY, row.phid, (closeErr, dateRow) => {
+              if (closeErr) {
+                log.error(closeErr);
+                return;
+              }
+              if (!dateRow) {
+                log.error(`No close date found for ${row.phid}`);
+              } else {
+                issue.closed_at = (new Date(dateRow.dateModified * 1000)).toISOString();
+              }
 
-      if (issue.closed) {
-        db.get(CLOSE_DATE_QUERY, row.phid, (closeErr, dateRow) => {
-          if (closeErr) {
-            log.error(closeErr);
-            return;
-          }
-          if (!dateRow) {
-            log.error(`No close date found for ${row.phid}`);
+              callback(issue, comments, done);
+            });
           } else {
-            issue.closed_at = (new Date(dateRow.dateModified * 1000)).toISOString();
+            callback(issue, comments, done);
           }
-
-          callback(issue, comments, done);
         });
-      } else {
-        callback(issue, comments, done);
-      }
+      });
     });
   };
 
