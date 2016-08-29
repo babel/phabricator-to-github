@@ -2,15 +2,18 @@
 const eachIssue = require('./sqlite/eachIssue');
 const importIssue = require('./github/api/importIssue');
 const log = require('./utils/log')('migrate');
+const importHandler = require('./github/importHandler');
 
 module.exports = function migrateOld() {
+  importHandler.setStartTime(new Date());
   eachIssue(
     (issue, comments, done) => {
       log.info(`Start importing issue T${issue.id}`);
+      const issueId = issue.id;
+      delete issue.id;
 
       delete issue.authorPHID;
-      issue.title = `${issue.title} (T${issue.id})`;
-      delete issue.id;
+      issue.title = `${issue.title} (T${issueId})`;
       issue.body = (issue.header || '') + issue.body;
       delete issue.header;
 
@@ -21,10 +24,11 @@ module.exports = function migrateOld() {
         delete comment.header;
       });
 
-      importIssue(issue, comments, done);
+      importIssue(issue, comments, issueId, done);
     },
     () => {
-      log.info('Import done');
+      log.info('Import done, waiting for results ...');
+      importHandler.startCheckingStatus();
     },
     'mt.id > 6000'
   );

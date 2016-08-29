@@ -2,13 +2,12 @@
 const https = require('https');
 const config = require('../../../config/config'); // eslint-disable-line import/no-unresolved
 const log = require('../../utils/log')('github');
-const importHandler = require('../importHandler');
 
-module.exports = function importIssue(issue, comments = [], issueId, callback, retry = true) {
+module.exports = function importStatus(startTime, callback) {
   const options = {
     host: 'api.github.com',
-    path: `/repos/${config.repository}/import/issues`,
-    method: 'POST',
+    path: `/repos/${config.repository}/import/issues?since=${startTime}`,
+    method: 'GET',
     headers: {
       Accept: 'application/vnd.github.golden-comet-preview+json',
       Authorization: `token ${config.apiKey}`,
@@ -17,26 +16,18 @@ module.exports = function importIssue(issue, comments = [], issueId, callback, r
   };
 
   const handler = response => {
-    if (response.statusCode !== 202) {
+    if (response.statusCode !== 200) {
       response.on('data', data => log.error(data.toString()));
       log.error(`${response.statusCode} ${response.statusMessage}`);
 
-      if (retry) {
-        log.info('Retrying in 1 minute');
-        setTimeout(() => {
-          importIssue(issue, comments, callback, false);
-        }, 60000);
-      } else if (callback) callback();
-
+      if (callback) callback();
       return;
     }
 
     let str = '';
     response.on('data', chunk => { str += chunk; });
     response.on('end', () => {
-      const resp = JSON.parse(str);
-      importHandler.addImportId(resp.id, issueId);
-      if (callback) callback();
+      if (callback) callback(JSON.parse(str));
     });
   };
 
@@ -46,5 +37,5 @@ module.exports = function importIssue(issue, comments = [], issueId, callback, r
     log.error(`problem with request: ${e.message}`);
   });
 
-  request.end(JSON.stringify({ issue, comments }));
+  request.end();
 };
