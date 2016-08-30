@@ -29,6 +29,16 @@ class ImportHandler {
     importStatus(this.startTime.toISOString(), this._handleStatuses);
   }
 
+  getTimeout() {
+    if (this.unhandledIds.size > 100) return 360000;
+    else if (this.unhandledIds.size > 50) return 240000;
+    else if (this.unhandledIds.size > 25) return 120000;
+    else if (this.unhandledIds.size > 15) return 60000;
+    else if (this.unhandledIds.size > 5) return 30000;
+
+    return 10000;
+  }
+
   _handleStatuses(results) {
     results.forEach(result => {
       if (this.unhandledIds.has(result.id)) {
@@ -45,8 +55,9 @@ class ImportHandler {
     });
 
     if (this.unhandledIds.size > 0) {
-      log.info('Unfinished imports. Checking again in 30 seconds.');
-      setTimeout(this.startCheckingStatus, 30000);
+      const timeout = this.getTimeout();
+      log.info(`Unfinished imports. Checking again in ${timeout / 1000} seconds.`);
+      setTimeout(this.startCheckingStatus, timeout);
     } else {
       this._writeResults();
     }
