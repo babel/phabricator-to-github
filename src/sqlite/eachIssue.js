@@ -68,14 +68,6 @@ function createGithubIssue(row, dateHeader, callback) {
   issue.updated_at = (new Date(issue.updated_at * 1000)).toISOString();
   if (issue.status !== 'open') issue.closed = true;
 
-  const labels = [];
-  if (
-    issue.status === 'duplicate' ||
-    issue.status === 'wontfix'
-  ) {
-    labels.push(issue.status);
-  }
-
   delete issue.status;
 
   getMessageHeader(
