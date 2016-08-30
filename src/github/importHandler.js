@@ -58,7 +58,7 @@ class ImportHandler {
       data[k] = v;
     }
 
-    fs.mkdirs(path.dirname(resultFile));
+    fs.mkdirsSync(path.dirname(resultFile));
     fs.writeFileSync(resultFile, JSON.stringify(data, null, 2));
   }
 }
