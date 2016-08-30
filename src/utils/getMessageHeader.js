@@ -64,11 +64,11 @@ module.exports = function getMessageHeader(type, issuePhid, userPhid, date, call
               break;
             case CUSTOM_FIELD_BABEL_CONFIG:
               // eslint-disable-next-line
-              options = `### Options\n\n${field.value.trim().startsWith('```') ? field.value.trim() : (`\`\`\`\n${field.value.trim()}\n\`\`\``)}\n\n`;
+              options = `### Options\n\n${field.value.includes('```') ? field.value.trim() : (`\`\`\`\n${field.value.trim()}\n\`\`\``)}\n\n`;
               break;
             case CUSTOM_FIELD_INPUT_CODE:
               // eslint-disable-next-line
-              input = `### Input code\n\n${field.value.trim().startsWith('```') ? field.value.trim() : (`\`\`\`js\n${field.value.trim()}\n\`\`\``)}\n\n`;
+              input = `### Input code\n\n${field.value.includes('```') ? field.value.trim() : (`\`\`\`js\n${field.value.trim()}\n\`\`\``)}\n\n`;
               break;
             default:
               throw new Error('Unknown custom field');
