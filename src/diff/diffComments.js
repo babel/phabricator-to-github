@@ -22,6 +22,7 @@ module.exports = function diffComments(phabiractorComments, githubComments = [],
 
   phabiractorComments.forEach((pComment, index) => {
     if (!githubComments[index]) {
+      if (pComment.body.trim() === '+1' || pComment.body.trim() === '👍') return;
       commentsToSend.push({ body: (pComment.header || '') + pComment.body });
     } else if (pComment.commentVersion > 1 && pComment.body !== githubComments[index].body) {
       const unmigratedBody = pComment.body.replace(

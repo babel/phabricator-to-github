@@ -17,19 +17,22 @@ module.exports = function migrateOld() {
       issue.body = (issue.header || '') + issue.body;
       delete issue.header;
 
-      comments.forEach(comment => {
+      const filteredComments = comments
+        .filter(comment => comment.body.trim() !== '+1' && comment.body.trim() !== '👍');
+
+      filteredComments.forEach(comment => {
         delete comment.authorPHID;
         delete comment.commentVersion;
         comment.body = (comment.header || '') + comment.body;
         delete comment.header;
       });
 
-      importIssue(issue, comments, issueId, done);
+      importIssue(issue, filteredComments, issueId, done);
     },
     () => {
       log.info('Import done, waiting for results ...');
       importHandler.startCheckingStatus();
     },
-    'mt.id > 6000'
+    'mt.id = 7318'
   );
 };
