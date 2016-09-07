@@ -15,6 +15,16 @@ module.exports = function migrateOld() {
   const changeQueue = async.queue(sendIssueChanges, 1);
   changeQueue.pause();
 
+  let countRequests = 0;
+  let doneRequests = 0;
+
+  const getCounter = function getCounter() {
+    ++doneRequests;
+    const percent = Math.round((doneRequests / countRequests) * 100);
+
+    return `${percent}% (${doneRequests}/${countRequests})`;
+  };
+
   eachIssue(
     (issue, comments, done) => {
       if (issue.id === 596) {
@@ -35,26 +45,48 @@ module.exports = function migrateOld() {
       if (issueChanges && issueChanges.state && issueChanges.state === 'open') {
         // open before comments
         log.info(`Queuing issue change for T${issue.id}`);
-        changeQueue.push(cb => { editIssue(issue.id, issueChanges, cb); });
+        countRequests++;
+        changeQueue.push(cb => {
+          log.info(`${getCounter()} Start sending pre-issue change for T${issue.id}`);
+          editIssue(issue.id, issueChanges, cb);
+        });
       }
 
       if (commentChanges) {
         log.info(`Queuing comment changes (${commentChanges.length}) for T${issue.id}`);
-        commentChanges.forEach(comment => {
-          changeQueue.push(cb => { createComment(issue.id, comment, cb); });
+        countRequests++;
+        changeQueue.push(cb => {
+          log.info(`${getCounter()} Start sending comment change for T${issue.id}`);
+          createComment(
+            issue.id,
+            {
+              body: commentChanges.reduce(
+                (prev, curr) => {
+                  if (!prev) return curr.body;
+                  return `${prev}\n\n<hr />\n\n${curr.body}`;
+                },
+                ''
+              ),
+            },
+            cb
+          );
         });
       }
 
       if (issueChanges && (!issueChanges.state || issueChanges.state !== 'open')) {
         // close or title after comments
         log.info(`Queuing issue change for T${issue.id}`);
-        changeQueue.push(cb => { editIssue(issue.id, issueChanges, cb); });
+        countRequests++;
+        changeQueue.push(cb => {
+          log.info(`${getCounter()} Start sending post-issue change for T${issue.id}`);
+          editIssue(issue.id, issueChanges, cb);
+        });
       }
 
       return done();
     },
     () => {
-      log.info('Starting send queue');
+      log.info(`Starting sending ${countRequests} requests in queue`);
       changeQueue.resume();
     },
     'mt.id <= 3086',
