@@ -33,6 +33,6 @@ module.exports = function migrateOld() {
       log.info('Import done, waiting for results ...');
       importHandler.startCheckingStatus();
     },
-    'mt.id = 7318'
+    'mt.id > 6000'
   );
 };
