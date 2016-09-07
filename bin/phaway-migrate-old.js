@@ -9,6 +9,7 @@ program
   .version(pjson.version)
   .option('-v, --verbose', 'Change log level to verbose')
   .option('-d, --debug', 'Change log level to debug')
+  .option('-n, --dry-run', 'Do not send anything to github')
   .parse(process.argv);
 
 // eslint-disable-next-line no-nested-ternary
@@ -19,4 +20,4 @@ log.setLogLevel(logLevel);
 // require after setting loglevel
 const migrateOld = require('../src/migrateOld');
 
-migrateOld();
+migrateOld(program.dryRun);

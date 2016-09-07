@@ -10,7 +10,7 @@ const sendIssueChanges = require('./github/sendIssueChanges');
 const editIssue = require('./github/api/editIssue');
 const createComment = require('./github/api/createComment');
 
-module.exports = function migrateOld() {
+module.exports = function migrateOld(dryRun = false) {
   log.info('Starting calculating diffs for issues <= 3086');
   const changeQueue = async.queue(sendIssueChanges, 1);
   changeQueue.pause();
@@ -48,7 +48,11 @@ module.exports = function migrateOld() {
         countRequests++;
         changeQueue.push(cb => {
           log.info(`${getCounter()} Start sending pre-issue change for T${issue.id}`);
-          editIssue(issue.id, issueChanges, cb);
+          if (!dryRun) editIssue(issue.id, issueChanges, cb);
+          else {
+            log.verbose('Dry-Run: Would send github request now');
+            cb();
+          }
         });
       }
 
@@ -57,19 +61,24 @@ module.exports = function migrateOld() {
         countRequests++;
         changeQueue.push(cb => {
           log.info(`${getCounter()} Start sending comment change for T${issue.id}`);
-          createComment(
-            issue.id,
-            {
-              body: commentChanges.reduce(
-                (prev, curr) => {
-                  if (!prev) return curr.body;
-                  return `${prev}\n\n<hr />\n\n${curr.body}`;
-                },
-                ''
-              ),
-            },
-            cb
-          );
+          if (!dryRun) {
+            createComment(
+              issue.id,
+              {
+                body: commentChanges.reduce(
+                  (prev, curr) => {
+                    if (!prev) return curr.body;
+                    return `${prev}\n\n<hr />\n\n${curr.body}`;
+                  },
+                  ''
+                ),
+              },
+              cb
+            );
+          } else {
+            log.verbose('Dry-Run: Would send github request now');
+            cb();
+          }
         });
       }
 
@@ -79,7 +88,11 @@ module.exports = function migrateOld() {
         countRequests++;
         changeQueue.push(cb => {
           log.info(`${getCounter()} Start sending post-issue change for T${issue.id}`);
-          editIssue(issue.id, issueChanges, cb);
+          if (!dryRun) editIssue(issue.id, issueChanges, cb);
+          else {
+            log.verbose('Dry-Run: Would send github request now');
+            cb();
+          }
         });
       }
 

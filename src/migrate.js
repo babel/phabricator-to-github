@@ -4,7 +4,7 @@ const importIssue = require('./github/api/importIssue');
 const log = require('./utils/log')('migrate');
 const importHandler = require('./github/importHandler');
 
-module.exports = function migrateOld() {
+module.exports = function migrate(dryRun = false) {
   importHandler.setStartTime(new Date());
   eachIssue(
     (issue, comments, done) => {
@@ -27,11 +27,18 @@ module.exports = function migrateOld() {
         delete comment.header;
       });
 
-      importIssue(issue, filteredComments, issueId, done);
+      if (!dryRun) importIssue(issue, filteredComments, issueId, done);
+      else {
+        log.verbose('Dry-Run: Would send github import request now');
+        done();
+      }
     },
     () => {
       log.info('Import done, waiting for results ...');
-      importHandler.startCheckingStatus();
+      if (!dryRun) importHandler.startCheckingStatus();
+      else {
+        log.verbose('Dry-Run: Would start watching for import status now');
+      }
     },
     'mt.id > 6000'
   );
