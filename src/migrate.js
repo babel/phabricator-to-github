@@ -1,45 +1,35 @@
 'use strict';
-const eachIssue = require('./sqlite/eachIssue');
+const async = require('async');
 const importIssue = require('./github/api/importIssue');
 const log = require('./utils/log')('migrate');
 const importHandler = require('./github/importHandler');
+const issues = require('../issues.json');
+const config = require('../config/config.js');
+const allCommentsByIssue = require('../comments.json');
+const creater = require('./github/createImportIssue');
 
-module.exports = function migrate(dryRun = false) {
+module.exports = function migrate(dryRun = false, limit = 0) {
   importHandler.setStartTime(new Date());
-  eachIssue(
-    (issue, comments, done) => {
-      log.info(`Start importing issue T${issue.id}`);
-      const issueId = issue.id;
-      delete issue.id;
+  const issueQueue = async.queue((issue, done) => {
+    log.info(`Start importing ${config.source}#${issue.number}`);
+    const comments = allCommentsByIssue[issue.number] || [];
 
-      delete issue.authorPHID;
-      issue.title = `${issue.title} (T${issueId})`;
-      issue.body = (issue.header || '') + issue.body;
-      delete issue.header;
+    if (!dryRun) importIssue(creater.createIssue(issue), comments.map(creater.createComment), issue.number, done);
+    else {
+      log.verbose('Dry-Run: Would send github import request now');
+      done();
+    }
+  }, 1);
 
-      const filteredComments = comments
-        .filter(comment => comment.body.trim() !== '+1' && comment.body.trim() !== '👍');
+  issueQueue.drain = () => {
+    log.info('Import done, waiting for results ...');
+    if (!dryRun) importHandler.startCheckingStatus();
+    else {
+      log.verbose('Dry-Run: Would start watching for import status now');
+    }
+  };
 
-      filteredComments.forEach(comment => {
-        delete comment.authorPHID;
-        delete comment.commentVersion;
-        comment.body = (comment.header || '') + comment.body;
-        delete comment.header;
-      });
+  const limitedIssues = limit > 0 ? issues.slice(0, limit) : issues;
 
-      if (!dryRun) importIssue(issue, filteredComments, issueId, done);
-      else {
-        log.verbose('Dry-Run: Would send github import request now');
-        done();
-      }
-    },
-    () => {
-      log.info('Import done, waiting for results ...');
-      if (!dryRun) importHandler.startCheckingStatus();
-      else {
-        log.verbose('Dry-Run: Would start watching for import status now');
-      }
-    },
-    'mt.id > 6000'
-  );
+  limitedIssues.forEach(issue => issueQueue.push(issue));
 };

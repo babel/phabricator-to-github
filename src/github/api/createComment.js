@@ -7,8 +7,8 @@ module.exports = function createComment(issueId, comment, callback, retry = true
   if (config.safeMode) comment.body = comment.body.replace(/@/g, '');
   const options = {
     host: 'api.github.com',
-    path: `/repos/${config.repository}/issues/${issueId}/comments`,
-    // path: `/repos/${config.repository}/issues/33/comments`,
+    path: `/repos/${config.target}/issues/${issueId}/comments`,
+    // path: `/repos/${config.target}/issues/33/comments`,
     method: 'POST',
     headers: {
       Accept: 'application/vnd.github.v3+json',

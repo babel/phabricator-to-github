@@ -2,6 +2,7 @@
 const fs = require('fs-extra');
 const path = require('path');
 const importStatus = require('./api/importStatus');
+const config = require('../../config/config');
 const log = require('../utils/log')('import-handler');
 
 const resultFile = path.join(__dirname, '../../redirects/importResult.json');
@@ -45,9 +46,14 @@ class ImportHandler {
         if (result.status === 'imported') {
           const issueId = this.unhandledIds.get(result.id);
           const githubId = result.issue_url.split('/').pop();
-          log.debug(`Marking import as finished: T${issueId} => #${githubId}`);
+          log.debug(
+            `Marking import as finished: ${config.source}#${issueId} => ${config.target}#${githubId}`
+          );
           this.unhandledIds.delete(result.id);
           this.finishedIds.set(issueId, githubId);
+        } else if (result.status === 'failed') {
+          log.error(`Status for issue ${this.unhandledIds.get(result.id)} is "${result.status}"`);
+          log.error(result);
         } else {
           log.debug(`Status for issue ${this.unhandledIds.get(result.id)} is "${result.status}"`);
         }

@@ -6,7 +6,7 @@ const log = require('../../utils/log')('github');
 module.exports = function editIssue(issueId, issue, callback, retry = true) {
   const options = {
     host: 'api.github.com',
-    path: `/repos/${config.repository}/issues/${issueId}`,
+    path: `/repos/${config.target}/issues/${issueId}`,
     method: 'PATCH',
     headers: {
       Accept: 'application/vnd.github.v3+json',

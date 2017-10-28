@@ -5,6 +5,10 @@ const glob = require('glob');
 const log = require('./utils/log')('filter');
 const commentsDirectory = require('./dumpGithubComments').commentsDirectory;
 
+const hzooBotMessage = `We really appreciate you taking the time to report an issue. The collaborators
+on this project attempt to help as many people as possible, but we're a limited number of volunteers,
+so it's possible this won't be addressed swiftly.`;
+
 module.exports = function filterGithubComments() {
   const files = glob.sync(path.join(commentsDirectory, '*.json'));
 
@@ -14,7 +18,13 @@ module.exports = function filterGithubComments() {
     log.info(`Import file ${file}`);
     const partlyComments = JSON.parse(fs.readFileSync(file));
     comments = comments.concat(
-      partlyComments.filter(comment => !comment.html_url.includes('/pull/'))
+      partlyComments.filter(
+        comment =>
+          !comment.html_url.includes('/pull/') &&
+          comment.body.trim() !== '+1' &&
+          comment.body.trim() !== '👍' &&
+          comment.body.indexOf(hzooBotMessage) === -1
+      )
     );
   });
 

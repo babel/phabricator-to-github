@@ -16,15 +16,6 @@ module.exports = function filterGithubIssues() {
     issues = issues.concat(partlyIssues.filter(issue => !issue.pull_request));
   });
 
-  const issuesById = {};
-
-  issues.forEach(issue => {
-    if (issuesById[issue.number]) {
-      log.error('Duplicate issues');
-    }
-    issuesById[issue.number] = issue;
-  });
-
-  fs.writeFileSync(path.join(__dirname, '../issues.json'), JSON.stringify(issuesById));
+  fs.writeFileSync(path.join(__dirname, '../issues.json'), JSON.stringify(issues));
   log.info('All issues filtered and written to issues.json');
 };

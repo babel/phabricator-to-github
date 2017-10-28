@@ -15,7 +15,7 @@ module.exports = function dumpIssues(directory, page, callback) {
 
   const options = {
     host: 'api.github.com',
-    path: `/repos/${config.repository}/issues?state=all&per_page=100${pageParam}`,
+    path: `/repos/${config.source}/issues?state=all&per_page=100${pageParam}`,
     method: 'GET',
     headers: {
       Accept: 'application/vnd.github.v3+json',

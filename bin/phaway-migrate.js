@@ -10,6 +10,7 @@ program
   .option('-v, --verbose', 'Change log level to verbose')
   .option('-d, --debug', 'Change log level to debug')
   .option('-n, --dry-run', 'Do not send anything to github')
+  .option('-l, --limit [limit]', 'Limit number of issues to move')
   .parse(process.argv);
 
 // eslint-disable-next-line no-nested-ternary
@@ -20,4 +21,4 @@ log.setLogLevel(logLevel);
 // require after setting loglevel
 const migrate = require('../src/migrate');
 
-migrate(program.dryRun);
+migrate(program.dryRun, program.limit);
