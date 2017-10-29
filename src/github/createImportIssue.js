@@ -1,6 +1,6 @@
 'use strict';
 
-const getMessageHeader = require('../utils/getMessageHeader');
+const header = require('../utils/getMessageHeader');
 const config = require('../../config/config');
 
 /*
@@ -26,27 +26,25 @@ const config = require('../../config/config');
   ]
 */
 
-function createIssue(
-  { title, body, created_at, closed_at: closedAt, updated_at: updatedAt, state, labels, user }
-) {
+function createIssue(rawIssue) {
   const issue = {
-    title,
-    body: `${getMessageHeader('Issue', user)}${body}`,
-    created_at,
-    closed: state === 'closed',
-    labels: labels.map(label => label.name).concat(config.additionalLabels),
+    title: rawIssue.title,
+    body: `${header.getIssueHeader(rawIssue)}${rawIssue.body}`,
+    created_at: rawIssue.created_at,
+    closed: rawIssue.state === 'closed',
+    labels: rawIssue.labels.map(label => label.name).concat(config.additionalLabels),
   };
 
-  if (closedAt) issue.closed_at = closedAt;
-  if (updatedAt) issue.updated_at = updatedAt;
+  if (rawIssue.closed_at) issue.closed_at = rawIssue.closed_at;
+  if (rawIssue.updated_at) issue.updated_at = rawIssue.updated_at;
 
   return issue;
 }
 
-function createComment({ body, created_at, user }) {
+function createComment(comment) {
   return {
-    body: `${getMessageHeader('Comment', user)}${body}`,
-    created_at,
+    body: `${header.getCommentHeader(comment)}${comment.body}`,
+    created_at: comment.created_at,
   };
 }
 

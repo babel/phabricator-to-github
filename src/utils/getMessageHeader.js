@@ -1,5 +1,13 @@
 'use strict';
+const config = require('../../config/config');
 
-module.exports = function getMessageHeader(type, user) {
-  return `> ${type} originally made by @${user.login}\n\n`;
-};
+function getIssueHeader(issue) {
+  return `> Issue originally reported by @${issue.user.login} in ${config.source}#${issue.number}\n\n`;
+}
+
+function getCommentHeader(comment) {
+  return `> Comment originally made by @${comment.user.login}\n\n`;
+}
+
+exports.getIssueHeader = getIssueHeader;
+exports.getCommentHeader = getCommentHeader;
