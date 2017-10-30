@@ -3,6 +3,7 @@
 const program = require('commander');
 const pjson = require('../package.json');
 const log = require('../src/utils/log');
+const rimraf = require('rimraf');
 
 program
   .description('Dump all comments from Github')
@@ -17,6 +18,12 @@ const logLevel = program.debug ? 'debug' : (program.verbose ? 'verbose' : 'info'
 log.setLogLevel(logLevel);
 
 // require after setting loglevel
+const dumpGithubIssues = require('../src/dumpGithubIssues');
 const dumpGithubComments = require('../src/dumpGithubComments');
 
-dumpGithubComments();
+rimraf(dumpGithubIssues.issueDirectory, () => {
+  rimraf(dumpGithubComments.commentsDirectory, () => {
+    dumpGithubIssues();
+    dumpGithubComments();
+  });
+});

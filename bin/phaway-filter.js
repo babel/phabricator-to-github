@@ -5,7 +5,7 @@ const pjson = require('../package.json');
 const log = require('../src/utils/log');
 
 program
-  .description('Filter and consolidate previously dumped comments from Github')
+  .description('Dump all comments from Github')
   .version(pjson.version)
   .option('-v, --verbose', 'Change log level to verbose')
   .option('-d, --debug', 'Change log level to debug')
@@ -18,5 +18,7 @@ log.setLogLevel(logLevel);
 
 // require after setting loglevel
 const filterGithubComments = require('../src/filterGithubComments');
+const filterGithubIssues = require('../src/filterGithubIssues');
 
+filterGithubIssues();
 filterGithubComments();
