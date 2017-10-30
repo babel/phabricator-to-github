@@ -11,7 +11,7 @@ const creater = require('./github/createImportIssue');
 module.exports = function migrate(dryRun = false, limit = 0) {
   importHandler.setStartTime(new Date());
   const issueQueue = async.queue((issue, done) => {
-    log.info(`Start importing ${config.source}#${issue.number}`);
+    log.info(`Start importing ${config.source.repository}#${issue.number}`);
     const comments = allCommentsByIssue[issue.number] || [];
 
     if (!dryRun) importIssue(creater.createIssue(issue), comments.map(creater.createComment), issue.number, done);
@@ -21,8 +21,10 @@ module.exports = function migrate(dryRun = false, limit = 0) {
     }
   }, 1);
 
+  issueQueue.pause();
+
   issueQueue.drain = () => {
-    log.info('Import done, waiting for results ...');
+    log.info('Importing done, waiting for results ...');
     if (!dryRun) importHandler.startCheckingStatus();
     else {
       log.verbose('Dry-Run: Would start watching for import status now');
@@ -32,4 +34,5 @@ module.exports = function migrate(dryRun = false, limit = 0) {
   const limitedIssues = limit > 0 ? issues.slice(0, limit) : issues;
 
   limitedIssues.forEach(issue => issueQueue.push(issue));
+  issueQueue.resume();
 };

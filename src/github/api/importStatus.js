@@ -6,7 +6,7 @@ const log = require('../../utils/log')('github');
 module.exports = function importStatus(startTime, callback) {
   const options = {
     host: 'api.github.com',
-    path: `/repos/${config.target}/import/issues?since=${startTime}`,
+    path: `/repos/${config.target.repository}/import/issues?since=${startTime}`,
     method: 'GET',
     headers: {
       Accept: 'application/vnd.github.golden-comet-preview+json',

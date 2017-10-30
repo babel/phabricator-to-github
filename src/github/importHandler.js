@@ -47,7 +47,7 @@ class ImportHandler {
           const issueId = this.unhandledIds.get(result.id);
           const githubId = result.issue_url.split('/').pop();
           log.debug(
-            `Marking import as finished: ${config.source}#${issueId} => ${config.target}#${githubId}`
+            `Marking import as finished: ${config.source.repository}#${issueId} => ${config.target.repository}#${githubId}`
           );
           this.unhandledIds.delete(result.id);
           this.finishedIds.set(issueId, githubId);
@@ -81,3 +81,4 @@ class ImportHandler {
 }
 
 module.exports = new ImportHandler();
+module.exports.resultFile = resultFile;

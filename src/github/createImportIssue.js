@@ -32,7 +32,7 @@ function createIssue(rawIssue) {
     body: `${header.getIssueHeader(rawIssue)}${rawIssue.body}`,
     created_at: rawIssue.created_at,
     closed: rawIssue.state === 'closed',
-    labels: rawIssue.labels.map(label => label.name).concat(config.additionalLabels),
+    labels: rawIssue.labels.map(label => label.name).concat(config.target.additionalLabels),
   };
 
   if (rawIssue.closed_at) issue.closed_at = rawIssue.closed_at;

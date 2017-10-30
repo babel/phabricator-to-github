@@ -6,7 +6,7 @@ const log = require('../../utils/log')('github');
 module.exports = function editIssue(issueId, issue, callback, retry = true) {
   const options = {
     host: 'api.github.com',
-    path: `/repos/${config.target}/issues/${issueId}`,
+    path: `/repos/${config.source.repository}/issues/${issueId}`,
     method: 'PATCH',
     headers: {
       Accept: 'application/vnd.github.v3+json',
@@ -31,8 +31,13 @@ module.exports = function editIssue(issueId, issue, callback, retry = true) {
       return;
     }
 
-    log.info(`Finished request to edit issue ${issueId}`);
-    if (callback) callback();
+    let str = '';
+    response.on('data', chunk => { str += chunk; });
+    response.on('end', () => {
+      log.info(`Finished request to edit issue ${issueId}`);
+      const resp = JSON.parse(str);
+      if (callback) callback(resp);
+    });
   });
 
   request.on('error', (e) => {

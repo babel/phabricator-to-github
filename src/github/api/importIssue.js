@@ -7,7 +7,7 @@ const importHandler = require('../importHandler');
 module.exports = function importIssue(issue, comments = [], issueId, callback, retry = true) {
   const options = {
     host: 'api.github.com',
-    path: `/repos/${config.target}/import/issues`,
+    path: `/repos/${config.target.repository}/import/issues`,
     method: 'POST',
     headers: {
       Accept: 'application/vnd.github.golden-comet-preview+json',

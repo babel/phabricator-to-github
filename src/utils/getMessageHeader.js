@@ -2,7 +2,7 @@
 const config = require('../../config/config');
 
 function getIssueHeader(issue) {
-  return `> Issue originally reported by @${issue.user.login} in ${config.source}#${issue.number}\n\n`;
+  return `> Issue originally reported by @${issue.user.login} in ${config.source.repository}#${issue.number}\n\n`;
 }
 
 function getCommentHeader(comment) {
