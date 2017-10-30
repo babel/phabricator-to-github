@@ -8,6 +8,9 @@ const createComment = require('./github/api/createComment');
 const lockIssue = require('./github/api/lockIssue');
 const importHandler = require('./github/importHandler');
 
+const issues = {};
+require('../issues.json').forEach(issue => { issues[issue.number] = issue; });
+
 const importResults = require(importHandler.resultFile);
 
 module.exports = function closeMovedIssues(dryRun = false) {
@@ -28,12 +31,13 @@ module.exports = function closeMovedIssues(dryRun = false) {
   Object.keys(importResults).forEach((issueNumber) => {
     log.info(`Queuing issue change for ${issueNumber}`);
     countRequests++;
-    let currentIssue;
+    let currentIssue = issues[issueNumber];
     if (config.source.close) {
       changeQueue.push(cb => {
         log.info(`${getCounter()} Closing ${config.source.repository}#${issueNumber}`);
         if (!dryRun) {
           editIssue(issueNumber, { state: 'closed' }, issue => {
+            // Update issue
             currentIssue = issue;
             cb();
           });
@@ -59,7 +63,7 @@ module.exports = function closeMovedIssues(dryRun = false) {
 
     if (config.source.lock) {
       changeQueue.push(cb => {
-        if (currentIssue && !currentIssue.locked) {
+        if (!currentIssue.locked) {
           log.info(`${getCounter()} Locking ${config.source.repository}#${issueNumber}`);
           if (!dryRun) {
             lockIssue(issueNumber, cb);
