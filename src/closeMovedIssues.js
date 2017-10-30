@@ -28,26 +28,50 @@ module.exports = function closeMovedIssues(dryRun = false) {
   Object.keys(importResults).forEach((issueNumber) => {
     log.info(`Queuing issue change for ${issueNumber}`);
     countRequests++;
-    changeQueue.push(cb => {
-      log.info(`${getCounter()} Closing ${config.source.repository}#${issueNumber}`);
-      if (!dryRun) {
-        editIssue(issueNumber, { state: 'closed' }, issue => {
-          const comment = config.source.comment && config.source.comment(config.target.repository, issueNumber);
-          if (comment) {
-            createComment(issueNumber, { body: comment }, () => {
-              if (!issue.locked && config.source.lock) {
-                lockIssue(issueNumber, () => { cb(); });
-              }
-            });
-          } else if (!issue.locked && config.source.lock) {
-            lockIssue(issueNumber, () => { cb(); });
+    let currentIssue;
+    if (config.source.close) {
+      changeQueue.push(cb => {
+        log.info(`${getCounter()} Closing ${config.source.repository}#${issueNumber}`);
+        if (!dryRun) {
+          editIssue(issueNumber, { state: 'closed' }, issue => {
+            currentIssue = issue;
+            cb();
+          });
+        } else {
+          log.verbose('Dry-Run: Would send github requests now');
+          cb();
+        }
+      });
+    }
+
+    const comment = config.source.comment && config.source.comment(config.target.repository, importResults[issueNumber]);
+    if (comment) {
+      changeQueue.push(cb => {
+        log.info(`${getCounter()} Creating comment in ${config.source.repository}#${issueNumber}`);
+        if (!dryRun) {
+          createComment(issueNumber, { body: comment }, cb);
+        } else {
+          log.verbose('Dry-Run: Would send github requests now');
+          cb();
+        }
+      });
+    }
+
+    if (config.source.lock) {
+      changeQueue.push(cb => {
+        if (currentIssue && !currentIssue.locked) {
+          log.info(`${getCounter()} Locking ${config.source.repository}#${issueNumber}`);
+          if (!dryRun) {
+            lockIssue(issueNumber, cb);
+          } else {
+            log.verbose('Dry-Run: Would send github requests now');
+            cb();
           }
-        });
-      } else {
-        log.verbose('Dry-Run: Would send github requests now');
-        cb();
-      }
-    });
+        } else {
+          cb();
+        }
+      });
+    }
   });
 
   log.info(`Starting sending ${countRequests} requests in queue`);

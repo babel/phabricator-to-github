@@ -9,9 +9,6 @@ program
   .command('dump-github-issues', 'Dump all issues from Github')
   .command('filter-github-comments', 'Filter and consolidate previously dumped comments')
   .command('filter-github-issues', 'Filter and consolidate previously dumped issues')
-  .command('generate-redirect-repo', 'Generates static templates for redirect')
-  .command('import-mysql-dump <file>', 'Import phabricator mysql dump into sqlite')
   .command('migrate', 'Migrate new phabricator issues to Github')
-  .command('migrate-old', 'Migrate changed phabricator issues to Github')
+  .command('close', 'Close')
   .parse(process.argv);
-
