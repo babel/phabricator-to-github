@@ -6,3 +6,4 @@
 * phaway filter-github-issues
 * phaway filter-github-comments
 * phaway migrate --dry-run --debug
+* phaway close --dry-run --debug
