@@ -5,3 +5,5 @@ config/config.js
 issues/
 comments/
 redirects
+comments.json
+issues.json

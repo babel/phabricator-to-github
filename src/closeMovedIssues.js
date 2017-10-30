@@ -50,6 +50,7 @@ module.exports = function closeMovedIssues(dryRun = false) {
 
     const comment = config.source.comment && config.source.comment(config.target.repository, importResults[issueNumber]);
     if (comment) {
+      countRequests++;
       changeQueue.push(cb => {
         log.info(`${getCounter()} Creating comment in ${config.source.repository}#${issueNumber}`);
         if (!dryRun) {
@@ -62,6 +63,7 @@ module.exports = function closeMovedIssues(dryRun = false) {
     }
 
     if (config.source.lock) {
+      countRequests++;
       changeQueue.push(cb => {
         if (!currentIssue.locked) {
           log.info(`${getCounter()} Locking ${config.source.repository}#${issueNumber}`);
