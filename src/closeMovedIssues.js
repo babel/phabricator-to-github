@@ -49,4 +49,7 @@ module.exports = function closeMovedIssues(dryRun = false) {
       }
     });
   });
+
+  log.info(`Starting sending ${countRequests} requests in queue`);
+  changeQueue.resume();
 };
