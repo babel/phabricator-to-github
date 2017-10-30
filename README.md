@@ -1,4 +1,4 @@
-# Phabricator to Github [![Build Status](https://travis-ci.org/babel/phabricator-to-github.svg?branch=master)](https://travis-ci.org/babel/phabricator-to-github)
+# Github to Github [![Build Status](https://travis-ci.org/babel/phabricator-to-github.svg?branch=master)](https://travis-ci.org/babel/phabricator-to-github)
 
 These steps have to be done in exactly this order:
 
